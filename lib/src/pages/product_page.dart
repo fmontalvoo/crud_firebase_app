@@ -1,7 +1,10 @@
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+
+import 'package:crud_firebase_app/src/utils/utils.dart' as utils;
 import 'package:crud_firebase_app/src/models/producto_model.dart';
 import 'package:crud_firebase_app/src/providers/producto_provider.dart';
-import 'package:flutter/material.dart';
-import 'package:crud_firebase_app/src/utils/utils.dart' as utils;
 
 class ProductPage extends StatefulWidget {
   @override
@@ -10,27 +13,34 @@ class ProductPage extends StatefulWidget {
 
 class _ProductPageState extends State<ProductPage> {
   final _formKey = GlobalKey<FormState>();
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   final _provider = ProductoProvider();
+  bool _save = false;
+  File _imagen;
 
   ProductoModel _producto = ProductoModel();
 
   @override
   Widget build(BuildContext context) {
+    ProductoModel model = ModalRoute.of(context).settings.arguments;
+    if (model != null) _producto = model;
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         title: Text('Producto'),
         actions: <Widget>[
           IconButton(
-              icon: Icon(Icons.photo_size_select_actual), onPressed: () {}),
-          IconButton(icon: Icon(Icons.camera_alt), onPressed: () {}),
+              icon: Icon(Icons.photo_size_select_actual), onPressed: _galeria),
+          IconButton(icon: Icon(Icons.camera_alt), onPressed: _camara),
         ],
       ),
-      body: Container(
+      body: SingleChildScrollView(
         padding: EdgeInsets.all(15.0),
         child: Form(
           key: _formKey,
           child: Column(
             children: <Widget>[
+              _imgImagen(),
               _txtNombre(),
               _txtPercio(),
               _swtDisponible(),
@@ -40,6 +50,20 @@ class _ProductPageState extends State<ProductPage> {
         ),
       ),
     );
+  }
+
+  Widget _imgImagen() {
+    if (_producto.imgURL != null)
+      return FadeInImage(
+          height: 300.0,
+          width: double.infinity,
+          fit: BoxFit.contain,
+          placeholder: AssetImage('assets/img/loading.gif'),
+          image: NetworkImage(_producto.imgURL));
+
+    return _imagen != null
+        ? Image.file(_imagen, height: 300.0, fit: BoxFit.cover)
+        : Image.asset('assets/img/no_img.png');
   }
 
   Widget _txtNombre() {
@@ -84,13 +108,44 @@ class _ProductPageState extends State<ProductPage> {
         textColor: Colors.white,
         label: Text('Guardar'),
         icon: Icon(Icons.save),
-        onPressed: _submit);
+        onPressed: _save ? null : _submit);
   }
 
-  void _submit() {
+  void _submit() async {
     if (_formKey.currentState.validate()) {
       _formKey.currentState.save();
-      _provider.crearProducto(_producto);
+      setState(() {
+        _save = true;
+      });
+
+      if (_imagen != null)
+        _producto.imgURL = await _provider.subirImagen(_imagen);
+
+      if (_producto.id != null)
+        _provider.editarProducto(_producto);
+      else
+        _provider.crearProducto(_producto);
     }
+    _snackbar('Registro guardado');
+    Navigator.pop(context);
+  }
+
+  void _snackbar(String mensaje) {
+    final snackbar =
+        SnackBar(content: Text(mensaje), duration: Duration(seconds: 2));
+
+    _scaffoldKey.currentState.showSnackBar(snackbar);
+  }
+
+  void _galeria() => _loadImage(ImageSource.gallery);
+  void _camara() => _loadImage(ImageSource.camera);
+
+  void _loadImage(ImageSource source) async {
+    final picked = await ImagePicker().getImage(source: source);
+    _imagen = File(picked.path);
+    if (_imagen != null) {
+      _producto.imgURL = null;
+    }
+    setState(() {});
   }
 }

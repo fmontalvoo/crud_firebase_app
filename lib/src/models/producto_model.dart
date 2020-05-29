@@ -30,7 +30,7 @@ class ProductoModel {
       );
 
   Map<String, dynamic> toJson() => {
-        "id": id,
+        // "id": id,
         "nombre": nombre,
         "precio": precio,
         "disponible": disponible,
