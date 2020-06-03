@@ -8,19 +8,21 @@ import 'package:http_parser/http_parser.dart';
 
 import 'package:crud_firebase_app/src/utils/keys/keys.dart';
 import 'package:crud_firebase_app/src/models/producto_model.dart';
+import 'package:crud_firebase_app/src/preferences/user_preferences.dart';
 
 class ProductoProvider {
-  static const String URL = 'https://data-base-38d79.firebaseio.com/';
+  static const String URL = DB_URL;
+  final _prefs = UserPreferences();
 
   Future<bool> crearProducto(ProductoModel producto) async {
-    final url = '$URL/productos.json';
+    final url = '$URL/productos.json?auth=${_prefs.getToken}';
     final response = await http.post(url, body: productoModelToJson(producto));
     final decode = json.decode(response.body);
     return true;
   }
 
   Future<List<ProductoModel>> listarProductos() async {
-    final url = '$URL/productos.json';
+    final url = '$URL/productos.json?auth=${_prefs.getToken}';
     final response = await http.get(url);
     final decode = json.decode(response.body);
     Map<String, dynamic> data = decode;
@@ -34,14 +36,14 @@ class ProductoProvider {
   }
 
   Future<bool> editarProducto(ProductoModel producto) async {
-    final url = '$URL/productos/${producto.id}.json';
+    final url = '$URL/productos/${producto.id}.json?auth=${_prefs.getToken}';
     final response = await http.put(url, body: productoModelToJson(producto));
     final decode = json.decode(response.body);
     return true;
   }
 
   Future<void> elminarProducto(String id) async {
-    final url = '$URL/productos/$id.json';
+    final url = '$URL/productos/$id.json?auth=${_prefs.getToken}';
     final response = await http.delete(url);
     final decode = json.decode(response.body);
   }
@@ -59,13 +61,12 @@ class ProductoProvider {
     final streamResponse = await uploadRequest.send();
     final response = await http.Response.fromStream(streamResponse);
 
-    if(response.statusCode!=200 && response.statusCode !=201){
+    if (response.statusCode != 200 && response.statusCode != 201) {
       print('Error: ${response.body}');
       return null;
     }
 
     final decode = json.decode(response.body);
     return decode['secure_url'];
-
   }
 }

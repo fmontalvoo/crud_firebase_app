@@ -3,7 +3,7 @@ import 'package:crud_firebase_app/src/utils/utils.dart';
 import 'package:crud_firebase_app/src/bloc/provider.dart';
 import 'package:crud_firebase_app/src/providers/user_provider.dart';
 
-class LoginPage extends StatelessWidget {
+class RegisterPage extends StatelessWidget {
   final UserProvider _provider = UserProvider();
 
   @override
@@ -39,7 +39,7 @@ class LoginPage extends StatelessWidget {
                 ]),
             child: Column(
               children: <Widget>[
-                Text('Login', style: TextStyle(fontSize: 20.0)),
+                Text('Sign up', style: TextStyle(fontSize: 20.0)),
                 SizedBox(height: 60.0),
                 _inputEmail(bloc),
                 SizedBox(height: 30.0),
@@ -50,9 +50,9 @@ class LoginPage extends StatelessWidget {
             ),
           ),
           FlatButton(
-              child: Text('¿No tienes una cuenta? Registrate'),
+              child: Text('¿Tienes una cuenta? Logueate'),
               onPressed: () =>
-                  Navigator.pushReplacementNamed(context, 'register')),
+                  Navigator.pushReplacementNamed(context, 'login')),
           SizedBox(height: 100.0)
         ],
       ),
@@ -105,7 +105,7 @@ class LoginPage extends StatelessWidget {
           return RaisedButton(
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 80.0, vertical: 20.0),
-                child: Text('Ingresar'),
+                child: Text('Registrarse'),
               ),
               color: Colors.deepPurple,
               textColor: Colors.white,
@@ -113,12 +113,12 @@ class LoginPage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(5.0)),
               elevation: 0.0,
               onPressed:
-                  !snapshot.hasData ? null : () => _login(context, bloc));
+                  !snapshot.hasData ? null : () => _register(context, bloc));
         });
   }
 
-  void _login(BuildContext context, LoginBloc bloc) async {
-    final response = await _provider.login(bloc.getEmail, bloc.getPassword);
+  void _register(BuildContext context, LoginBloc bloc) async {
+    final response = await _provider.signUp(bloc.getEmail, bloc.getPassword);
     if (response['success'])
       Navigator.pushReplacementNamed(context, 'home');
     else
