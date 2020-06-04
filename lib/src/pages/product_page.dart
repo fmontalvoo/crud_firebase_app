@@ -2,9 +2,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import 'package:crud_firebase_app/src/bloc/provider.dart';
 import 'package:crud_firebase_app/src/utils/utils.dart' as utils;
 import 'package:crud_firebase_app/src/models/producto_model.dart';
-import 'package:crud_firebase_app/src/providers/producto_provider.dart';
 
 class ProductPage extends StatefulWidget {
   @override
@@ -14,14 +14,15 @@ class ProductPage extends StatefulWidget {
 class _ProductPageState extends State<ProductPage> {
   final _formKey = GlobalKey<FormState>();
   final _scaffoldKey = GlobalKey<ScaffoldState>();
-  final _provider = ProductoProvider();
   bool _save = false;
   File _imagen;
+  ProductBloc _bloc;
 
   ProductoModel _producto = ProductoModel();
 
   @override
   Widget build(BuildContext context) {
+    _bloc = Provider.of(context).getProductBloc;
     ProductoModel model = ModalRoute.of(context).settings.arguments;
     if (model != null) _producto = model;
     return Scaffold(
@@ -118,13 +119,12 @@ class _ProductPageState extends State<ProductPage> {
         _save = true;
       });
 
-      if (_imagen != null)
-        _producto.imgURL = await _provider.subirImagen(_imagen);
+      if (_imagen != null) _producto.imgURL = await _bloc.subirImagen(_imagen);
 
       if (_producto.id != null)
-        _provider.editarProducto(_producto);
+        _bloc.editarProducto(_producto);
       else
-        _provider.crearProducto(_producto);
+        _bloc.crearProducto(_producto);
     }
     _snackbar('Registro guardado');
     Navigator.pop(context);

@@ -1,25 +1,23 @@
 import 'package:crud_firebase_app/src/models/producto_model.dart';
-import 'package:crud_firebase_app/src/providers/producto_provider.dart';
 import 'package:flutter/material.dart';
 
 import 'package:crud_firebase_app/src/bloc/provider.dart';
 
 class HomePage extends StatelessWidget {
-  final _provider = ProductoProvider();
   @override
   Widget build(BuildContext context) {
-    final bloc = Provider.of(context);
-
+    final bloc = Provider.of(context).getProductBloc;
+    bloc.listarProductos();
     return Scaffold(
       appBar: AppBar(title: Text('Inicio')),
-      body: _list(),
+      body: _list(bloc),
       floatingActionButton: _flaotingActionButton(context),
     );
   }
 
-  Widget _list() {
-    return FutureBuilder(
-      future: _provider.listarProductos(),
+  Widget _list(ProductBloc bloc) {
+    return StreamBuilder(
+      stream: bloc.getProductStream,
       builder:
           (BuildContext context, AsyncSnapshot<List<ProductoModel>> snapshot) {
         if (snapshot.hasData) {
@@ -27,14 +25,14 @@ class HomePage extends StatelessWidget {
           return ListView.builder(
               itemCount: productos.length,
               itemBuilder: (context, index) =>
-                  _item(context, productos[index]));
+                  _item(context, productos[index], bloc));
         } else
           return Center(child: CircularProgressIndicator());
       },
     );
   }
 
-  Widget _item(BuildContext context, ProductoModel producto) {
+  Widget _item(BuildContext context, ProductoModel producto, ProductBloc bloc) {
     return Dismissible(
       key: UniqueKey(),
       background: Container(color: Colors.red),
@@ -64,7 +62,7 @@ class HomePage extends StatelessWidget {
             Navigator.pushNamed(context, 'product', arguments: producto),
       ),
       onDismissed: (direction) {
-        _provider.elminarProducto(producto.id);
+        bloc.elminarProducto(producto.id);
       },
     );
   }

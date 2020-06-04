@@ -41,11 +41,11 @@ class RegisterPage extends StatelessWidget {
               children: <Widget>[
                 Text('Sign up', style: TextStyle(fontSize: 20.0)),
                 SizedBox(height: 60.0),
-                _inputEmail(bloc),
+                _inputEmail(bloc.getLoginBloc),
                 SizedBox(height: 30.0),
-                _inputPassword(bloc),
+                _inputPassword(bloc.getLoginBloc),
                 SizedBox(height: 30.0),
-                _btnIngresar(bloc)
+                _btnIngresar(bloc.getLoginBloc)
               ],
             ),
           ),
